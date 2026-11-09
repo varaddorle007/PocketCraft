@@ -80,6 +80,22 @@ let onlinePlayers = new Set();
 let lastCpuInfo = os.cpus();
 let lastCpuTime = Date.now();
 let lastMeasuredCpuUsage = 0;
+let detectedPublicIp = null;
+
+function fetchPublicIp() {
+  const https = require('https');
+  https.get('https://api.ipify.org', (res) => {
+    let data = '';
+    res.on('data', c => data += c);
+    res.on('end', () => {
+      detectedPublicIp = data.trim();
+      deviceStats.publicIp = detectedPublicIp;
+      broadcastWs({ type: 'status', data: getStatusPayload() });
+    });
+  }).on('error', () => {});
+}
+fetchPublicIp();
+setInterval(fetchPublicIp, 300000);
 
 // Device & Battery State
 let deviceStats = {
@@ -330,13 +346,15 @@ function startServer() {
   const useLazymc = (config.mode === 'wake_on_demand') && fs.existsSync(lazymcPath);
 
   if (useLazymc) {
-    addLog('[PocketCraft] Launching via lazymc (Wake-on-Demand mode active)');
+    updateServerProperty('server-port', '25566');
+    addLog('[PocketCraft] Launching via lazymc proxy (Listening on standard port 25565 -> 25566)');
     serverProcess = spawn(lazymcPath, ['--config', path.join(BASE_DIR, 'config', 'lazymc.toml')], {
       cwd: BASE_DIR,
       shell: false
     });
   } else {
-    addLog(`[PocketCraft] Launching directly with OpenJDK (RAM: ${ramMb} MB)`);
+    updateServerProperty('server-port', '25565');
+    addLog(`[PocketCraft] Launching directly on standard Minecraft port 25565 (RAM: ${ramMb} MB)`);
     serverProcess = spawn('java', javaArgs, {
       cwd: SERVER_DIR,
       shell: false
@@ -501,6 +519,7 @@ function getStatusPayload() {
     onlinePlayers: Array.from(onlinePlayers),
     device: deviceStats,
     tunnel: config.tunnel,
+    publicIp: detectedPublicIp || 'Detecting...',
     whitelist: getWhitelistData(),
     minecraftPort: config.minecraftPort,
     bedrockPort: config.bedrockPort,

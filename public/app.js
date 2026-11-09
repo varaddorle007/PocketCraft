@@ -191,28 +191,21 @@ function updateStatus(data) {
   }
 
   // Update Tunnel and Claim Status
-  const claimCard = document.getElementById('claimNoticeCard');
-  const claimBtn = document.getElementById('claimLinkBtn');
-  
-  if (data.tunnel && data.tunnel.claimUrl && (!data.tunnel.publicAddress || data.tunnel.publicAddress.includes('Pending') || data.tunnel.publicAddress.includes('binary not installed'))) {
-    if (claimCard) claimCard.style.display = 'flex';
-    if (claimBtn) claimBtn.href = data.tunnel.claimUrl;
-    tunnelStatus.textContent = 'Claim Link Ready';
-    tunnelStatus.className = 'badge warn';
-    javaIpInput.value = 'Click Claim Link Above to Activate';
-    bedrockIpInput.value = 'Click Claim Link Above to Activate';
-  } else if (data.tunnel && data.tunnel.publicAddress && !data.tunnel.publicAddress.includes('Pending') && !data.tunnel.publicAddress.includes('binary not installed')) {
-    if (claimCard) claimCard.style.display = 'none';
-    const rawAddr = data.tunnel.publicAddress;
-    javaIpInput.value = rawAddr;
-    const parts = rawAddr.split(':');
-    bedrockIpInput.value = `${parts[0]} (Port: ${data.bedrockPort || 19132})`;
-    tunnelStatus.textContent = 'Active (Zero Port-Forward)';
+  // Direct Public IP
+  const directJava = document.getElementById('directJavaInput');
+  const directBedrock = document.getElementById('directBedrockInput');
+  const pubIp = data.publicIp || (data.device && data.device.publicIp);
+
+  if (pubIp && pubIp !== 'Fetching...') {
+    if (directJava) directJava.value = `${pubIp}:${data.minecraftPort || 25565}`;
+    if (directBedrock) directBedrock.value = `${pubIp} (Port: ${data.bedrockPort || 19132})`;
+    tunnelStatus.textContent = 'Direct IP Ready';
     tunnelStatus.className = 'badge live-badge';
   } else {
-    if (claimCard) claimCard.style.display = 'none';
-    javaIpInput.value = 'Connecting to tunnel...';
-    bedrockIpInput.value = 'Connecting to tunnel...';
+    if (directJava) directJava.value = 'Detecting Public IP...';
+    if (directBedrock) directBedrock.value = 'Detecting Public IP...';
+    tunnelStatus.textContent = 'Direct Mode';
+    tunnelStatus.className = 'badge';
   }
 
   // Active Mode Card Highlight & Drawer

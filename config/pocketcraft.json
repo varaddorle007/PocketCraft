@@ -1,13 +1,13 @@
 {
   "serverName": "PocketCraft Server",
   "deviceModel": "Auto-Detect Device",
-  "mode": "scheduled",
+  "mode": "always_on",
   "ramAllocationMb": 6144,
   "serverType": "purpur",
   "minecraftPort": 25565,
   "bedrockPort": 19132,
   "webPort": 8080,
-  "idleSleepMinutes": 11,
+  "idleSleepMinutes": 32,
   "schedule": {
     "enabled": false,
     "startTime": "16:00",
@@ -26,7 +26,7 @@
     "enabled": true,
     "provider": "playit",
     "publicAddress": "Connecting to tunnel network...",
-    "claimUrl": "https://playit.gg/claim/17171bd7b0"
+    "claimUrl": "https://playit.gg/claim/379d50f824"
   },
   "thermalProtection": {
     "enabled": true,

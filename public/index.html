@@ -231,38 +231,34 @@
           </div>
         </div>
 
-        <!-- Internet Tunnel (Playit.gg) Section -->
+        <!-- Direct Internet Connection Section (100% Self-Hosted & Private) -->
         <div class="connection-section">
           <div class="tunnel-header-row">
-            <h4 class="conn-section-title">🌍 Internet Access (For friends outside your house)</h4>
-            <span class="info-pill" title="Playit creates a secure tunnel bypassing router port-forwarding">Zero Port-Forward</span>
+            <h4 class="conn-section-title">🌍 Direct Internet Connection (Zero Third-Party Services)</h4>
+            <span class="info-pill" title="Direct connection straight to your device with 0 middleman delay">100% Private & Direct</span>
           </div>
 
-          <!-- Playit Claim Notice (shown if not yet claimed) -->
-          <div class="claim-notice-card" id="claimNoticeCard" style="display: none;">
-            <div class="claim-notice-icon">⚡</div>
-            <div class="claim-notice-content">
-              <strong>Action Required: Claim Your Free Public Address</strong>
-              <p>Click below to link this server to Playit.gg. It is 100% free, takes 10 seconds, and gives you a permanent public domain (e.g. <code>myname.auto.playit.gg</code>).</p>
-              <a href="#" target="_blank" class="btn btn-claim" id="claimLinkBtn">🔗 Click Here to Claim Free Tunnel</a>
-            </div>
+          <div class="direct-notice-box">
+            <span>⚡ <strong>Pure Direct Self-Hosting:</strong> Zero external accounts, zero third-party proxies, and zero relay lag. Your friends connect directly to your own IP!</span>
           </div>
 
           <div class="connect-grid">
             <div class="connect-box">
-              <span class="box-label">🖥️ Java Edition (Public Address)</span>
+              <span class="box-label">🖥️ Java Edition (Direct Public IP)</span>
               <div class="ip-row">
-                <input type="text" readonly id="javaIpInput" value="Connecting to tunnel...">
-                <button class="copy-btn" data-target="javaIpInput">Copy</button>
+                <input type="text" readonly id="directJavaInput" value="Fetching your public IP...">
+                <button class="copy-btn" data-target="directJavaInput">Copy</button>
               </div>
+              <small class="box-hint">Forward Port <strong>25565 (TCP)</strong> on your home router to <code>192.168.1.4</code></small>
             </div>
 
             <div class="connect-box">
-              <span class="box-label">📱 Bedrock Edition (Public Address)</span>
+              <span class="box-label">📱 Bedrock Edition (Direct Public IP)</span>
               <div class="ip-row">
-                <input type="text" readonly id="bedrockIpInput" value="Connecting to tunnel...">
-                <button class="copy-btn" data-target="bedrockIpInput">Copy</button>
+                <input type="text" readonly id="directBedrockInput" value="Fetching your public IP...">
+                <button class="copy-btn" data-target="directBedrockInput">Copy IP</button>
               </div>
+              <small class="box-hint">Forward Port <strong>19132 (UDP)</strong> on your home router to <code>192.168.1.4</code></small>
             </div>
           </div>
         </div>
