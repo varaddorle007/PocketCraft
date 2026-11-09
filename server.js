@@ -123,13 +123,28 @@ if (process.env.PREFIX && process.env.PREFIX.includes('com.termux')) {
 function getLocalIpAddresses() {
   const interfaces = os.networkInterfaces();
   const addresses = [];
+  const virtualRegex = /(virtual|vbox|vmnet|hyper-v|vethernet|wsl|tailscale|zerotier|docker|pseudo|loopback)/i;
+
   for (const name of Object.keys(interfaces)) {
+    if (virtualRegex.test(name)) continue;
     for (const iface of interfaces[name]) {
       if (iface.family === 'IPv4' && !iface.internal) {
+        // Exclude VirtualBox host-only subnet (192.168.56.x) and APIPA (169.254.x.x)
+        if (iface.address.startsWith('192.168.56.') || iface.address.startsWith('169.254.')) continue;
         addresses.push({ interface: name, address: iface.address });
       }
     }
   }
+
+  // Sort Wi-Fi / WLAN interfaces first, then physical Ethernet
+  addresses.sort((a, b) => {
+    const aWifi = /wi-?fi|wlan|wireless/i.test(a.interface);
+    const bWifi = /wi-?fi|wlan|wireless/i.test(b.interface);
+    if (aWifi && !bWifi) return -1;
+    if (!aWifi && bWifi) return 1;
+    return 0;
+  });
+
   return addresses;
 }
 
@@ -323,6 +338,7 @@ function startServer() {
   // Construct Java command with Aikar's optimized low-overhead flags
   const ramMb = config.ramAllocationMb || 3584;
   const javaArgs = [
+    '-Djava.net.preferIPv4Stack=true',
     `-Xms${Math.min(1024, ramMb)}M`,
     `-Xmx${ramMb}M`,
     '-XX:+UseG1GC',
@@ -598,6 +614,21 @@ function getServerProperty(key, defaultValue = null) {
   return defaultValue;
 }
 
+function updateGeyserAuthType(onlineMode) {
+  const geyserConfigPath = path.join(SERVER_DIR, 'plugins', 'Geyser-Spigot', 'config.yml');
+  if (fs.existsSync(geyserConfigPath)) {
+    try {
+      let content = fs.readFileSync(geyserConfigPath, 'utf8');
+      const targetAuth = onlineMode ? 'floodgate' : 'offline';
+      content = content.replace(/^(\s*auth-type:\s*).*$/m, `$1${targetAuth}`);
+      fs.writeFileSync(geyserConfigPath, content);
+      addLog(`[Geyser] Synchronized Bedrock auth-type to: ${targetAuth}`);
+    } catch (err) {
+      console.error('[Geyser] Error updating config.yml auth-type:', err);
+    }
+  }
+}
+
 // Whitelist File Management
 function getWhitelistData() {
   const wlFile = path.join(SERVER_DIR, 'whitelist.json');
@@ -690,6 +721,7 @@ app.post('/api/config', (req, res) => {
 
     if (updates.onlineMode !== undefined) {
       updateServerProperty('online-mode', updates.onlineMode ? 'true' : 'false');
+      updateGeyserAuthType(updates.onlineMode);
     }
     if (updates.serverName) {
       updateServerProperty('motd', updates.serverName);
@@ -735,9 +767,15 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(` PocketCraft Web Manager running on:`);
   console.log(` Local:   http://localhost:${PORT}`);
   for (const ip of deviceStats.localIps) {
-    console.log(` Network: http://${ip.address}:${PORT}`);
+    console.log(` Network: http://${ip.address}:${PORT} (${ip.interface})`);
   }
   console.log('====================================================');
+
+  // Auto-start Minecraft server if configured to Always-On
+  if (config.mode === 'always_on') {
+    addLog('[PocketCraft] Always-On mode active: Launching Minecraft server...');
+    startServer();
+  }
 
   // Start tunnel if enabled
   if (config.tunnel.enabled) {

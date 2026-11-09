@@ -3,7 +3,7 @@
 
 bind = "0.0.0.0:25565"
 server = "127.0.0.1:25566"
-command = ["java", "-Xms1024M", "-Xmx3584M", "-XX:+UseG1GC", "-XX:+ParallelRefProcEnabled", "-jar", "server.jar", "nogui"]
+command = ["java", "-Djava.net.preferIPv4Stack=true", "-Xms1024M", "-Xmx3584M", "-XX:+UseG1GC", "-XX:+ParallelRefProcEnabled", "-jar", "server.jar", "nogui"]
 directory = "./server"
 sleep_after = "10m"
 min_lifetime = "2m"

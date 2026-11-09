@@ -180,7 +180,9 @@ function updateStatus(data) {
 
     // Local IP
     if (dev.localIps && dev.localIps.length > 0) {
-      const primaryIp = dev.localIps.find(i => i.address.startsWith('192.168.')) || dev.localIps[0];
+      // Find the real LAN IP (exclude VirtualBox 192.168.56.x and APIPA 169.254.x)
+      const validIps = dev.localIps.filter(i => !i.address.startsWith('192.168.56.') && !i.address.startsWith('169.254.'));
+      const primaryIp = validIps.find(i => /wi-?fi|wlan/i.test(i.interface)) || validIps[0] || dev.localIps[0];
       const lanJava = document.getElementById('lanJavaInput');
       const lanBedrock = document.getElementById('lanBedrockInput');
       const lanPort = document.getElementById('lanBedrockPort');
