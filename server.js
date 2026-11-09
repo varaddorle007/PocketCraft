@@ -496,10 +496,12 @@ function getStatusPayload() {
   return {
     status: serverStatus,
     mode: config.mode,
+    schedule: config.schedule,
     uptimeSeconds,
     onlinePlayers: Array.from(onlinePlayers),
     device: deviceStats,
     tunnel: config.tunnel,
+    whitelist: getWhitelistData(),
     minecraftPort: config.minecraftPort,
     bedrockPort: config.bedrockPort,
     ramAllocationMb: config.ramAllocationMb
@@ -519,6 +521,7 @@ wss.on('connection', (ws) => {
   ws.send(JSON.stringify({ type: 'status', data: getStatusPayload() }));
   ws.send(JSON.stringify({ type: 'logs', data: logHistory }));
   ws.send(JSON.stringify({ type: 'config', data: config }));
+  ws.send(JSON.stringify({ type: 'whitelist', data: getWhitelistData() }));
 
   ws.on('message', (message) => {
     try {
@@ -548,6 +551,101 @@ function updateServerProperty(key, value) {
     fs.writeFileSync(propFile, content);
   }
 }
+
+function getServerProperty(key, defaultValue = null) {
+  const propFile = path.join(SERVER_DIR, 'server.properties');
+  if (fs.existsSync(propFile)) {
+    const content = fs.readFileSync(propFile, 'utf8');
+    const match = content.match(new RegExp(`^${key}=(.*)$`, 'm'));
+    if (match) return match[1].trim();
+  }
+  return defaultValue;
+}
+
+// Whitelist File Management
+function getWhitelistData() {
+  const wlFile = path.join(SERVER_DIR, 'whitelist.json');
+  let players = [];
+  if (fs.existsSync(wlFile)) {
+    try {
+      players = JSON.parse(fs.readFileSync(wlFile, 'utf8'));
+    } catch (_) {
+      players = [];
+    }
+  }
+  const isEnabled = getServerProperty('white-list', 'false') === 'true';
+  return { enabled: isEnabled, players };
+}
+
+function saveWhitelistData(players) {
+  const wlFile = path.join(SERVER_DIR, 'whitelist.json');
+  try {
+    fs.writeFileSync(wlFile, JSON.stringify(players, null, 2));
+  } catch (err) {
+    console.error('[Whitelist] Error writing whitelist.json:', err);
+  }
+}
+
+// REST Whitelist Endpoints
+app.get('/api/whitelist', (req, res) => {
+  res.json(getWhitelistData());
+});
+
+app.post('/api/whitelist/toggle', (req, res) => {
+  const { enabled } = req.body;
+  const isEnabled = !!enabled;
+  updateServerProperty('white-list', isEnabled ? 'true' : 'false');
+  if (serverProcess && serverStatus === 'ONLINE') {
+    sendServerCommand(`whitelist ${isEnabled ? 'on' : 'off'}`);
+  }
+  broadcastWs({ type: 'whitelist', data: getWhitelistData() });
+  res.json({ success: true, enabled: isEnabled });
+});
+
+app.post('/api/whitelist/add', (req, res) => {
+  const { name } = req.body;
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    return res.status(400).json({ error: 'Player name required' });
+  }
+  const cleanName = name.trim();
+  const current = getWhitelistData();
+  const exists = current.players.some(p => p.name.toLowerCase() === cleanName.toLowerCase());
+
+  if (!exists) {
+    const crypto = require('crypto');
+    current.players.push({
+      uuid: crypto.randomUUID(),
+      name: cleanName
+    });
+    saveWhitelistData(current.players);
+  }
+
+  if (serverProcess && serverStatus === 'ONLINE') {
+    sendServerCommand(`whitelist add ${cleanName}`);
+  }
+
+  const updated = getWhitelistData();
+  broadcastWs({ type: 'whitelist', data: updated });
+  res.json({ success: true, players: updated.players });
+});
+
+app.post('/api/whitelist/remove', (req, res) => {
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ error: 'Player name required' });
+
+  const cleanName = name.trim();
+  const current = getWhitelistData();
+  const filtered = current.players.filter(p => p.name.toLowerCase() !== cleanName.toLowerCase());
+  saveWhitelistData(filtered);
+
+  if (serverProcess && serverStatus === 'ONLINE') {
+    sendServerCommand(`whitelist remove ${cleanName}`);
+  }
+
+  const updated = getWhitelistData();
+  broadcastWs({ type: 'whitelist', data: updated });
+  res.json({ success: true, players: updated.players });
+});
 
 app.post('/api/config', (req, res) => {
   try {

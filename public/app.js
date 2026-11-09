@@ -78,6 +78,8 @@ function connectWebSocket() {
         updateConfig(msg.data);
       } else if (msg.type === 'players') {
         updatePlayers(msg.data);
+      } else if (msg.type === 'whitelist') {
+        updateWhitelist(msg.data);
       }
     } catch (err) {
       console.error('Error parsing WS message:', err);
@@ -213,10 +215,89 @@ function updateStatus(data) {
     bedrockIpInput.value = 'Connecting to tunnel...';
   }
 
-  // Active Mode Card Highlight
+  // Active Mode Card Highlight & Drawer
   modeCards.forEach(card => {
     card.classList.toggle('active', card.dataset.mode === data.mode);
   });
+  updateModeDrawer(data.mode);
+
+  if (data.whitelist) {
+    updateWhitelist(data.whitelist);
+  }
+
+  if (data.schedule) {
+    const startInp = document.getElementById('inlineStartTime');
+    const endInp = document.getElementById('inlineEndTime');
+    if (startInp && data.schedule.startTime) startInp.value = data.schedule.startTime;
+    if (endInp && data.schedule.endTime) endInp.value = data.schedule.endTime;
+    if (data.schedule.days) {
+      document.querySelectorAll('.day-pill').forEach(pill => {
+        const d = parseInt(pill.dataset.day);
+        pill.classList.toggle('active', data.schedule.days.includes(d));
+      });
+    }
+  }
+}
+
+function updateModeDrawer(mode) {
+  const dWake = document.getElementById('drawerWakeOnDemand');
+  const dSched = document.getElementById('drawerScheduled');
+  const dAlways = document.getElementById('drawerAlwaysOn');
+
+  if (dWake) dWake.style.display = (mode === 'wake_on_demand') ? 'block' : 'none';
+  if (dSched) dSched.style.display = (mode === 'scheduled') ? 'block' : 'none';
+  if (dAlways) dAlways.style.display = (mode === 'always_on') ? 'block' : 'none';
+}
+
+function updateWhitelist(wl) {
+  const badge = document.getElementById('whitelistStatusBadge');
+  const btn = document.getElementById('toggleWhitelistBtn');
+  const chipsWrap = document.getElementById('whitelistedChipsWrap');
+
+  if (!badge || !chipsWrap) return;
+
+  if (wl.enabled) {
+    badge.textContent = 'ON (Protected)';
+    badge.className = 'badge live-badge';
+    if (btn) {
+      btn.textContent = 'Turn OFF Whitelist';
+      btn.className = 'btn btn-whitelist-toggle on';
+    }
+  } else {
+    badge.textContent = 'OFF (Open to All)';
+    badge.className = 'badge';
+    if (btn) {
+      btn.textContent = 'Turn ON Whitelist';
+      btn.className = 'btn btn-whitelist-toggle';
+    }
+  }
+
+  chipsWrap.innerHTML = '';
+  if (!wl.players || wl.players.length === 0) {
+    chipsWrap.innerHTML = '<span class="empty-hint">No players whitelisted yet. Enter a username above to add friends!</span>';
+  } else {
+    wl.players.forEach(p => {
+      const chip = document.createElement('div');
+      chip.className = 'player-chip';
+      chip.innerHTML = `
+        <img src="https://mc-heads.net/avatar/${encodeURIComponent(p.name)}/20" class="player-chip-avatar" alt="${p.name}" onerror="this.style.display='none'">
+        <span>${p.name}</span>
+        <button type="button" class="player-chip-del" title="Remove ${p.name}" data-name="${p.name}">&times;</button>
+      `;
+      chip.querySelector('.player-chip-del').addEventListener('click', () => {
+        removeWhitelistPlayer(p.name);
+      });
+      chipsWrap.appendChild(chip);
+    });
+  }
+}
+
+function removeWhitelistPlayer(name) {
+  fetch('/api/whitelist/remove', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  }).catch(err => console.error('Whitelist remove error:', err));
 }
 
 function updateConfig(cfg) {
@@ -226,12 +307,34 @@ function updateConfig(cfg) {
   ramSliderVal.textContent = `${cfg.ramAllocationMb} MB`;
   document.getElementById('settingServerName').value = cfg.serverName || '';
   document.getElementById('settingIdleMinutes').value = cfg.idleSleepMinutes || 10;
-  if (document.getElementById('settingOnlineMode')) {
-    document.getElementById('settingOnlineMode').value = (cfg.onlineMode === false) ? 'false' : 'true';
+
+  const idleSlider = document.getElementById('inlineIdleSlider');
+  const idleVal = document.getElementById('inlineIdleVal');
+  if (idleSlider) idleSlider.value = cfg.idleSleepMinutes || 10;
+  if (idleVal) idleVal.textContent = `${cfg.idleSleepMinutes || 10} Minutes`;
+
+  // Auth Mode Segmented Buttons
+  const isPremium = (cfg.onlineMode !== false);
+  const hiddenAuth = document.getElementById('settingOnlineMode');
+  const btnPrem = document.getElementById('authBtnPremium');
+  const btnOff = document.getElementById('authBtnOffline');
+  if (hiddenAuth) hiddenAuth.value = isPremium ? 'true' : 'false';
+  if (btnPrem && btnOff) {
+    btnPrem.classList.toggle('active', isPremium);
+    btnOff.classList.toggle('active', !isPremium);
   }
+
   if (cfg.schedule) {
-    document.getElementById('settingStartTime').value = cfg.schedule.startTime || '16:00';
-    document.getElementById('settingEndTime').value = cfg.schedule.endTime || '23:00';
+    const startInp = document.getElementById('inlineStartTime');
+    const endInp = document.getElementById('inlineEndTime');
+    if (startInp) startInp.value = cfg.schedule.startTime || '16:00';
+    if (endInp) endInp.value = cfg.schedule.endTime || '23:00';
+    if (cfg.schedule.days) {
+      document.querySelectorAll('.day-pill').forEach(pill => {
+        const d = parseInt(pill.dataset.day);
+        pill.classList.toggle('active', cfg.schedule.days.includes(d));
+      });
+    }
   }
 }
 
@@ -278,6 +381,7 @@ modeCards.forEach(card => {
     const selectedMode = card.dataset.mode;
     modeCards.forEach(c => c.classList.remove('active'));
     card.classList.add('active');
+    updateModeDrawer(selectedMode);
 
     fetch('/api/config', {
       method: 'POST',
@@ -286,6 +390,111 @@ modeCards.forEach(card => {
     });
   });
 });
+
+// Inline Idle Timeout Slider
+const inlineIdleSlider = document.getElementById('inlineIdleSlider');
+const inlineIdleVal = document.getElementById('inlineIdleVal');
+if (inlineIdleSlider) {
+  inlineIdleSlider.addEventListener('input', () => {
+    if (inlineIdleVal) inlineIdleVal.textContent = `${inlineIdleSlider.value} Minutes`;
+    fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idleSleepMinutes: parseInt(inlineIdleSlider.value) })
+    });
+  });
+}
+
+// Inline Day Pills Toggle
+document.querySelectorAll('.day-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    pill.classList.toggle('active');
+  });
+});
+
+// Inline Schedule Save Button
+const saveInlineScheduleBtn = document.getElementById('saveInlineScheduleBtn');
+if (saveInlineScheduleBtn) {
+  saveInlineScheduleBtn.addEventListener('click', () => {
+    const startVal = document.getElementById('inlineStartTime').value;
+    const endVal = document.getElementById('inlineEndTime').value;
+    const activeDays = [];
+    document.querySelectorAll('.day-pill.active').forEach(p => {
+      activeDays.push(parseInt(p.dataset.day));
+    });
+
+    fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        schedule: {
+          enabled: true,
+          startTime: startVal,
+          endTime: endVal,
+          days: activeDays
+        }
+      })
+    }).then(() => {
+      const orig = saveInlineScheduleBtn.textContent;
+      saveInlineScheduleBtn.textContent = 'Saved! ✓';
+      saveInlineScheduleBtn.style.background = '#10b981';
+      setTimeout(() => {
+        saveInlineScheduleBtn.textContent = orig;
+        saveInlineScheduleBtn.style.background = '';
+      }, 2000);
+    });
+  });
+}
+
+// Whitelist Event Handlers
+const toggleWhitelistBtn = document.getElementById('toggleWhitelistBtn');
+if (toggleWhitelistBtn) {
+  toggleWhitelistBtn.addEventListener('click', () => {
+    const isCurrentlyOn = toggleWhitelistBtn.classList.contains('on');
+    fetch('/api/whitelist/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: !isCurrentlyOn })
+    }).catch(err => console.error('Whitelist toggle error:', err));
+  });
+}
+
+const whitelistAddForm = document.getElementById('whitelistAddForm');
+const whitelistPlayerInput = document.getElementById('whitelistPlayerInput');
+if (whitelistAddForm && whitelistPlayerInput) {
+  whitelistAddForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = whitelistPlayerInput.value.trim();
+    if (!name) return;
+
+    fetch('/api/whitelist/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    }).then(() => {
+      whitelistPlayerInput.value = '';
+    }).catch(err => console.error('Whitelist add error:', err));
+  });
+}
+
+// Auth Segmented Toggle Buttons in Settings Modal
+const btnPrem = document.getElementById('authBtnPremium');
+const btnOff = document.getElementById('authBtnOffline');
+const hiddenAuthInp = document.getElementById('settingOnlineMode');
+
+if (btnPrem && btnOff && hiddenAuthInp) {
+  btnPrem.addEventListener('click', () => {
+    btnPrem.classList.add('active');
+    btnOff.classList.remove('active');
+    hiddenAuthInp.value = 'true';
+  });
+
+  btnOff.addEventListener('click', () => {
+    btnOff.classList.add('active');
+    btnPrem.classList.remove('active');
+    hiddenAuthInp.value = 'false';
+  });
+}
 
 // Copy IP Buttons
 document.querySelectorAll('.copy-btn').forEach(btn => {
@@ -374,10 +583,10 @@ settingsForm.addEventListener('submit', (e) => {
     onlineMode: document.getElementById('settingOnlineMode') ? (document.getElementById('settingOnlineMode').value === 'true') : true,
     ramAllocationMb: parseInt(settingRamSlider.value),
     idleSleepMinutes: parseInt(document.getElementById('settingIdleMinutes').value),
-    schedule: {
-      enabled: currentConfig ? currentConfig.schedule.enabled : true,
-      startTime: document.getElementById('settingStartTime').value,
-      endTime: document.getElementById('settingEndTime').value,
+    schedule: currentConfig ? currentConfig.schedule : {
+      enabled: false,
+      startTime: '16:00',
+      endTime: '23:00',
       days: [1, 2, 3, 4, 5, 6, 7]
     },
     thermalProtection: {

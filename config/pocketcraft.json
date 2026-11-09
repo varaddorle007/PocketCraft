@@ -1,7 +1,7 @@
 {
   "serverName": "PocketCraft Server",
   "deviceModel": "Auto-Detect Device",
-  "mode": "always_on",
+  "mode": "scheduled",
   "ramAllocationMb": 6144,
   "serverType": "purpur",
   "minecraftPort": 25565,
@@ -25,8 +25,8 @@
   "tunnel": {
     "enabled": true,
     "provider": "playit",
-    "publicAddress": "playit binary not installed. Run install script.",
-    "claimUrl": "https://playit.gg/claim/af57877028"
+    "publicAddress": "Connecting to tunnel network...",
+    "claimUrl": "https://playit.gg/claim/17171bd7b0"
   },
   "thermalProtection": {
     "enabled": true,

@@ -76,6 +76,66 @@
               </div>
             </div>
           </div>
+
+          <!-- Dynamic Mode Settings Drawer (Below Selected Card) -->
+          <div class="mode-drawer" id="modeDrawer">
+            <!-- Wake on Demand Drawer Content -->
+            <div class="drawer-content" id="drawerWakeOnDemand">
+              <div class="drawer-header">
+                <span class="drawer-title">⚡ Wake-on-Demand (Smart Battery Saver)</span>
+                <span class="drawer-badge">Active</span>
+              </div>
+              <p class="drawer-desc">When 0 players are online, the server process enters sleep mode so your phone stays cool and consumes almost zero battery. As soon as any player pings or joins, it automatically wakes up!</p>
+              <div class="drawer-row">
+                <label>Idle Sleep Timeout:</label>
+                <div class="range-wrap">
+                  <input type="range" id="inlineIdleSlider" min="2" max="60" value="10" class="form-range">
+                  <span class="range-val" id="inlineIdleVal">10 Minutes</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Scheduled Drawer Content (Shows inline when Scheduled card is clicked) -->
+            <div class="drawer-content" id="drawerScheduled" style="display: none;">
+              <div class="drawer-header">
+                <span class="drawer-title">🕒 Operating Schedule Settings</span>
+                <span class="drawer-badge schedule-badge">Active Window</span>
+              </div>
+              <p class="drawer-desc">Configure the exact hours when your Minecraft server turns on and off automatically:</p>
+              <div class="schedule-times-grid">
+                <div class="time-box">
+                  <label>▶ Turn ON at:</label>
+                  <input type="time" id="inlineStartTime" class="form-input" value="16:00">
+                </div>
+                <div class="time-box">
+                  <label>⏹ Turn OFF at:</label>
+                  <input type="time" id="inlineEndTime" class="form-input" value="23:00">
+                </div>
+              </div>
+              <div class="days-row">
+                <label>Active Days:</label>
+                <div class="days-pills" id="daysPillsContainer">
+                  <button type="button" class="day-pill active" data-day="1">Mon</button>
+                  <button type="button" class="day-pill active" data-day="2">Tue</button>
+                  <button type="button" class="day-pill active" data-day="3">Wed</button>
+                  <button type="button" class="day-pill active" data-day="4">Thu</button>
+                  <button type="button" class="day-pill active" data-day="5">Fri</button>
+                  <button type="button" class="day-pill active" data-day="6">Sat</button>
+                  <button type="button" class="day-pill active" data-day="7">Sun</button>
+                </div>
+              </div>
+              <button type="button" class="btn btn-save-schedule" id="saveInlineScheduleBtn">💾 Save Schedule</button>
+            </div>
+
+            <!-- Always On Drawer Content -->
+            <div class="drawer-content" id="drawerAlwaysOn" style="display: none;">
+              <div class="drawer-header">
+                <span class="drawer-title">🟢 24/7 Always-On Active</span>
+                <span class="drawer-badge">Continuous</span>
+              </div>
+              <p class="drawer-desc">The Minecraft server will run continuously without sleeping. Best when connected to wall power on an old laptop or phone with a cooling fan.</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -208,6 +268,29 @@
         </div>
       </section>
 
+      <!-- Whitelist / Allowed Players Manager Card -->
+      <section class="card whitelist-card">
+        <div class="card-header">
+          <div class="header-with-toggle">
+            <h3>🛡️ Player Whitelist (Allow Specific Friends Only)</h3>
+            <span class="badge" id="whitelistStatusBadge">OFF (Open to All)</span>
+          </div>
+          <button type="button" class="btn btn-whitelist-toggle" id="toggleWhitelistBtn">Turn ON Whitelist</button>
+        </div>
+        <p class="section-desc">When Whitelist is turned ON, <strong>only players on your approved list</strong> can join your world. Anyone else is rejected automatically.</p>
+
+        <!-- Add Player Form -->
+        <form class="whitelist-form" id="whitelistAddForm">
+          <input type="text" id="whitelistPlayerInput" placeholder="Enter Minecraft player username (e.g. Alex, Steve)..." autocomplete="off">
+          <button type="submit" class="btn btn-add-player">+ Add Player</button>
+        </form>
+
+        <!-- Whitelisted Players Chips -->
+        <div class="whitelisted-chips-wrap" id="whitelistedChipsWrap">
+          <span class="empty-hint" id="whitelistEmptyHint">No players whitelisted yet. Enter a username above to add friends!</span>
+        </div>
+      </section>
+
       <!-- Live Web Console & Command Input -->
       <section class="card console-card">
         <div class="card-header">
@@ -262,11 +345,23 @@
 
             <div class="form-group">
               <label>Player Authentication Mode</label>
-              <select id="settingOnlineMode" class="form-input">
-                <option value="true">Microsoft Account Only (Official Premium)</option>
-                <option value="false">All Players (Allow Offline / Bedrock / Non-Premium)</option>
-              </select>
-              <small class="form-help">Choose "All Players" if any friends play on mobile Bedrock without Xbox Live or use offline launchers.</small>
+              <div class="auth-toggle-group">
+                <button type="button" class="auth-pill active" id="authBtnPremium" data-val="true">
+                  <span class="auth-pill-icon">🔒</span>
+                  <div class="auth-pill-text">
+                    <strong>Microsoft Account Only</strong>
+                    <small>Official paid Java & Xbox players</small>
+                  </div>
+                </button>
+                <button type="button" class="auth-pill" id="authBtnOffline" data-val="false">
+                  <span class="auth-pill-icon">🔓</span>
+                  <div class="auth-pill-text">
+                    <strong>All Players (Recommended)</strong>
+                    <small>Allows Mobile Bedrock & all friends</small>
+                  </div>
+                </button>
+              </div>
+              <input type="hidden" id="settingOnlineMode" value="true">
             </div>
 
             <div class="form-group">
@@ -275,29 +370,13 @@
                 <input type="range" id="settingRamSlider" min="1024" max="6144" step="256" class="form-range">
                 <span class="range-val" id="ramSliderVal">3584 MB</span>
               </div>
-              <small class="form-help">Recommended for 8GB phones (Vivo V20): 3584 MB. Leaves RAM for Android
-                OS.</small>
+              <small class="form-help">Recommended for 8GB phones (Vivo V20): 3584 MB. Leaves RAM for Android OS.</small>
             </div>
 
             <div class="form-group">
               <label>Wake-on-Demand Idle Timeout (Minutes)</label>
               <input type="number" id="settingIdleMinutes" min="2" max="60" class="form-input" value="10">
-              <small class="form-help">How long to wait after the last player disconnects before putting server to
-                sleep.</small>
-            </div>
-
-            <div class="form-group">
-              <label>Operating Hours (For Scheduled Mode)</label>
-              <div class="time-row">
-                <div>
-                  <small>Start Time</small>
-                  <input type="time" id="settingStartTime" class="form-input" value="16:00">
-                </div>
-                <div>
-                  <small>End Time</small>
-                  <input type="time" id="settingEndTime" class="form-input" value="23:00">
-                </div>
-              </div>
+              <small class="form-help">How long to wait after the last player disconnects before putting server to sleep.</small>
             </div>
 
             <div class="form-group">
