@@ -23,10 +23,10 @@
     ]
   },
   "tunnel": {
-    "enabled": true,
-    "provider": "playit",
-    "publicAddress": "Connecting to tunnel network...",
-    "claimUrl": "https://playit.gg/claim/379d50f824"
+    "enabled": false,
+    "provider": "direct",
+    "publicAddress": "Direct Connection",
+    "claimUrl": ""
   },
   "thermalProtection": {
     "enabled": true,

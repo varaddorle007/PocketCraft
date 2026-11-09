@@ -551,6 +551,7 @@ function sendCommand(cmd) {
 // Terminal Controls
 clearConsoleBtn.addEventListener('click', () => {
   terminalWindow.innerHTML = '';
+  fetch('/api/logs/clear', { method: 'POST' }).catch(() => {});
 });
 
 autoscrollToggle.addEventListener('click', () => {

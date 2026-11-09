@@ -438,7 +438,23 @@ function sendServerCommand(cmd) {
 }
 
 // Playit.gg Tunnel Management
+let lastClaimUrlLogged = null;
+
+function stopPlayitTunnel() {
+  if (tunnelProcess) {
+    try {
+      tunnelProcess.kill('SIGKILL');
+    } catch (_) {}
+    tunnelProcess = null;
+  }
+}
+
 function startPlayitTunnel() {
+  if (!config.tunnel.enabled || config.tunnel.provider !== 'playit') {
+    stopPlayitTunnel();
+    return;
+  }
+
   const playitPath = path.join(BASE_DIR, 'playit') + (os.platform() === 'win32' ? '.exe' : '');
   if (!fs.existsSync(playitPath)) {
     config.tunnel.publicAddress = "playit binary not installed. Run install script.";
@@ -454,11 +470,12 @@ function startPlayitTunnel() {
 
   tunnelProcess.stdout.on('data', (data) => {
     const text = data.toString();
-    // Parse claim link
+    // Parse claim link (only log ONCE to prevent console spam)
     const claimMatch = text.match(/(https:\/\/playit\.gg\/claim\/[a-zA-Z0-9]+)/);
-    if (claimMatch) {
+    if (claimMatch && lastClaimUrlLogged !== claimMatch[1]) {
+      lastClaimUrlLogged = claimMatch[1];
       config.tunnel.claimUrl = claimMatch[1];
-      addLog(`[Playit] Setup required! Claim your tunnel at: ${config.tunnel.claimUrl}`);
+      addLog(`[Playit] Setup required! Claim your tunnel once at: ${config.tunnel.claimUrl}`);
       saveConfig();
       broadcastWs({ type: 'config', data: config });
     }
@@ -705,6 +722,11 @@ app.post('/api/command', (req, res) => {
 });
 
 app.get('/api/logs', (req, res) => res.json(logHistory));
+
+app.post('/api/logs/clear', (req, res) => {
+  logHistory = [];
+  res.json({ success: true });
+});
 
 // Start Web Server
 const PORT = config.webPort || 8080;
