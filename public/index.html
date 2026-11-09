@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,8 +8,11 @@
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
   <div class="app-container">
     <!-- Top Navigation Header -->
@@ -139,30 +143,68 @@
       <!-- Connection & Shareable Link Card -->
       <section class="card connect-card">
         <div class="card-header">
-          <h3>🌐 Play with Friends (No Port Forwarding)</h3>
-          <span class="badge live-badge" id="tunnelStatus">Playit.gg Active</span>
+          <h3>🌐 Server Connection Details & IP Addresses</h3>
+          <span class="badge live-badge" id="tunnelStatus">Ready</span>
         </div>
-        <div class="connect-grid">
-          <div class="connect-box">
-            <span class="box-label">🖥️ Java Edition (PC / Mac)</span>
-            <div class="ip-row">
-              <input type="text" readonly id="javaIpInput" value="Connecting to tunnel...">
-              <button class="copy-btn" data-target="javaIpInput">Copy</button>
+
+        <!-- Local Network (Wi-Fi) Section -->
+        <div class="connection-section">
+          <h4 class="conn-section-title">🏠 Local Home Wi-Fi (For devices in your house)</h4>
+          <div class="connect-grid">
+            <div class="connect-box">
+              <span class="box-label">🖥️ PC / Mac (Java Edition)</span>
+              <div class="ip-row">
+                <input type="text" readonly id="lanJavaInput" value="192.168.1.4:25565">
+                <button class="copy-btn" data-target="lanJavaInput">Copy</button>
+              </div>
+              <small class="box-hint">On the host PC itself, you can also join: <code>localhost:25565</code></small>
+            </div>
+
+            <div class="connect-box">
+              <span class="box-label">📱 Phones, Tablets & Consoles (Bedrock Edition)</span>
+              <div class="ip-row">
+                <input type="text" readonly id="lanBedrockInput" value="192.168.1.4">
+                <button class="copy-btn" data-target="lanBedrockInput">Copy IP</button>
+              </div>
+              <small class="box-hint">In Minecraft Bedrock ➔ Servers ➔ Add Server ➔ Port: <strong id="lanBedrockPort">19132</strong></small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Internet Tunnel (Playit.gg) Section -->
+        <div class="connection-section">
+          <div class="tunnel-header-row">
+            <h4 class="conn-section-title">🌍 Internet Access (For friends outside your house)</h4>
+            <span class="info-pill" title="Playit creates a secure tunnel bypassing router port-forwarding">Zero Port-Forward</span>
+          </div>
+
+          <!-- Playit Claim Notice (shown if not yet claimed) -->
+          <div class="claim-notice-card" id="claimNoticeCard" style="display: none;">
+            <div class="claim-notice-icon">⚡</div>
+            <div class="claim-notice-content">
+              <strong>Action Required: Claim Your Free Public Address</strong>
+              <p>Click below to link this server to Playit.gg. It is 100% free, takes 10 seconds, and gives you a permanent public domain (e.g. <code>myname.auto.playit.gg</code>).</p>
+              <a href="#" target="_blank" class="btn btn-claim" id="claimLinkBtn">🔗 Click Here to Claim Free Tunnel</a>
             </div>
           </div>
 
-          <div class="connect-box">
-            <span class="box-label">📱 Bedrock Edition (Android / iOS / Console)</span>
-            <div class="ip-row">
-              <input type="text" readonly id="bedrockIpInput" value="Connecting to tunnel...">
-              <button class="copy-btn" data-target="bedrockIpInput">Copy</button>
+          <div class="connect-grid">
+            <div class="connect-box">
+              <span class="box-label">🖥️ Java Edition (Public Address)</span>
+              <div class="ip-row">
+                <input type="text" readonly id="javaIpInput" value="Connecting to tunnel...">
+                <button class="copy-btn" data-target="javaIpInput">Copy</button>
+              </div>
+            </div>
+
+            <div class="connect-box">
+              <span class="box-label">📱 Bedrock Edition (Public Address)</span>
+              <div class="ip-row">
+                <input type="text" readonly id="bedrockIpInput" value="Connecting to tunnel...">
+                <button class="copy-btn" data-target="bedrockIpInput">Copy</button>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div class="lan-info">
-          <span>🏠 Home Wi-Fi LAN:</span> <strong id="lanAddressDisplay">192.168.1.50:25565</strong> 
-          <span class="muted">(Use this if playing on the same home Wi-Fi)</span>
         </div>
       </section>
 
@@ -196,7 +238,8 @@
         <!-- Command Input Form -->
         <form class="command-bar" id="commandForm">
           <span class="cmd-prompt">&gt;</span>
-          <input type="text" id="cmdInput" placeholder="Enter Minecraft command (e.g. op username, gamemode creative)..." autocomplete="off">
+          <input type="text" id="cmdInput"
+            placeholder="Enter Minecraft command (e.g. op username, gamemode creative)..." autocomplete="off">
           <button type="submit" class="btn btn-send">Send</button>
         </form>
       </section>
@@ -232,13 +275,15 @@
                 <input type="range" id="settingRamSlider" min="1024" max="6144" step="256" class="form-range">
                 <span class="range-val" id="ramSliderVal">3584 MB</span>
               </div>
-              <small class="form-help">Recommended for 8GB phones (Vivo V20): 3584 MB. Leaves RAM for Android OS.</small>
+              <small class="form-help">Recommended for 8GB phones (Vivo V20): 3584 MB. Leaves RAM for Android
+                OS.</small>
             </div>
 
             <div class="form-group">
               <label>Wake-on-Demand Idle Timeout (Minutes)</label>
               <input type="number" id="settingIdleMinutes" min="2" max="60" class="form-input" value="10">
-              <small class="form-help">How long to wait after the last player disconnects before putting server to sleep.</small>
+              <small class="form-help">How long to wait after the last player disconnects before putting server to
+                sleep.</small>
             </div>
 
             <div class="form-group">
@@ -271,5 +316,5 @@
 
   <script src="app.js"></script>
 </body>
-</html>
 
+</html>

@@ -178,23 +178,39 @@ function updateStatus(data) {
 
     // Local IP
     if (dev.localIps && dev.localIps.length > 0) {
-      lanAddressDisplay.textContent = `${dev.localIps[0].address}:${data.minecraftPort}`;
+      const primaryIp = dev.localIps.find(i => i.address.startsWith('192.168.')) || dev.localIps[0];
+      const lanJava = document.getElementById('lanJavaInput');
+      const lanBedrock = document.getElementById('lanBedrockInput');
+      const lanPort = document.getElementById('lanBedrockPort');
+      if (lanJava) lanJava.value = `${primaryIp.address}:${data.minecraftPort || 25565}`;
+      if (lanBedrock) lanBedrock.value = primaryIp.address;
+      if (lanPort) lanPort.textContent = `${data.bedrockPort || 19132}`;
     }
   }
 
-  // Update Tunnel
-  if (data.tunnel && data.tunnel.publicAddress) {
+  // Update Tunnel and Claim Status
+  const claimCard = document.getElementById('claimNoticeCard');
+  const claimBtn = document.getElementById('claimLinkBtn');
+  
+  if (data.tunnel && data.tunnel.claimUrl && (!data.tunnel.publicAddress || data.tunnel.publicAddress.includes('Pending') || data.tunnel.publicAddress.includes('binary not installed'))) {
+    if (claimCard) claimCard.style.display = 'flex';
+    if (claimBtn) claimBtn.href = data.tunnel.claimUrl;
+    tunnelStatus.textContent = 'Claim Link Ready';
+    tunnelStatus.className = 'badge warn';
+    javaIpInput.value = 'Click Claim Link Above to Activate';
+    bedrockIpInput.value = 'Click Claim Link Above to Activate';
+  } else if (data.tunnel && data.tunnel.publicAddress && !data.tunnel.publicAddress.includes('Pending') && !data.tunnel.publicAddress.includes('binary not installed')) {
+    if (claimCard) claimCard.style.display = 'none';
     const rawAddr = data.tunnel.publicAddress;
     javaIpInput.value = rawAddr;
-    
-    // For Bedrock, parse hostname and bedrock port
     const parts = rawAddr.split(':');
     bedrockIpInput.value = `${parts[0]} (Port: ${data.bedrockPort || 19132})`;
     tunnelStatus.textContent = 'Active (Zero Port-Forward)';
     tunnelStatus.className = 'badge live-badge';
   } else {
-    javaIpInput.value = 'Tunnel binary starting...';
-    bedrockIpInput.value = 'Tunnel binary starting...';
+    if (claimCard) claimCard.style.display = 'none';
+    javaIpInput.value = 'Connecting to tunnel...';
+    bedrockIpInput.value = 'Connecting to tunnel...';
   }
 
   // Active Mode Card Highlight

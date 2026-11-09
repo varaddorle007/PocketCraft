@@ -1,13 +1,13 @@
 {
   "serverName": "PocketCraft Server",
   "deviceModel": "Auto-Detect Device",
-  "mode": "wake_on_demand",
-  "ramAllocationMb": 3584,
+  "mode": "always_on",
+  "ramAllocationMb": 6144,
   "serverType": "purpur",
   "minecraftPort": 25565,
   "bedrockPort": 19132,
   "webPort": 8080,
-  "idleSleepMinutes": 10,
+  "idleSleepMinutes": 11,
   "schedule": {
     "enabled": false,
     "startTime": "16:00",
@@ -26,12 +26,11 @@
     "enabled": true,
     "provider": "playit",
     "publicAddress": "playit binary not installed. Run install script.",
-    "claimUrl": "https://playit.gg/claim/107d3bc25d"
+    "claimUrl": "https://playit.gg/claim/af57877028"
   },
   "thermalProtection": {
     "enabled": true,
-    "maxTempCelsius": 48,
-    "throttleWarning": true
+    "maxTempCelsius": 48
   },
   "geyserEnabled": true,
   "motd": "§aA PocketCraft Server §7| §eHosted on Mobile/Laptop",
@@ -39,5 +38,6 @@
   "difficulty": "normal",
   "gamemode": "survival",
   "viewDistance": 8,
-  "simulationDistance": 6
+  "simulationDistance": 6,
+  "onlineMode": false
 }

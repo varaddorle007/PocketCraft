@@ -427,6 +427,10 @@ function startPlayitTunnel() {
     return;
   }
 
+  if (config.tunnel.publicAddress.includes('not installed')) {
+    config.tunnel.publicAddress = "Connecting to tunnel network...";
+  }
+
   addLog('[PocketCraft] Starting Playit.gg network tunnel...');
   tunnelProcess = spawn(playitPath, [], { cwd: BASE_DIR });
 
