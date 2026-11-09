@@ -1,0 +1,32 @@
+# Node dependencies
+node_modules/
+
+# Minecraft Server Runtime & World Saves (Generated on first run)
+server/server.jar
+server/world/
+server/world_nether/
+server/world_the_end/
+server/logs/
+server/crash-reports/
+server/libraries/
+server/cache/
+server/versions/
+server/plugins/*.jar
+server/plugins/Geyser-Spigot/
+server/plugins/floodgate/
+!server/plugins/.gitkeep
+
+# Native binaries (Auto-downloaded by install scripts for user's specific OS/architecture)
+playit
+playit.exe
+lazymc
+lazymc.exe
+
+# Secret tokens and credentials
+.playit/
+*.log
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+Desktop.ini

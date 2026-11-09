@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PocketCraft | Device Minecraft Server Manager</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-badge">⛏️</div>
+        <div>
+          <h1 class="brand-title">PocketCraft</h1>
+          <span class="device-tag" id="deviceTag">Host: Vivo V20 / Android</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="status-indicator" id="statusBadge">
+          <span class="status-dot"></span>
+          <span class="status-text">OFFLINE</span>
+        </div>
+        <button class="icon-btn" id="settingsToggleBtn" title="Settings">⚙️</button>
+      </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="dashboard-grid">
+
+      <!-- Hero Server Controls & Quick Stats -->
+      <section class="card hero-card">
+        <div class="server-meta">
+          <div>
+            <h2 id="serverNameDisplay">PocketCraft Server</h2>
+            <p class="server-subtext" id="uptimeDisplay">Uptime: 0m | Engine: Purpur + GeyserMC</p>
+          </div>
+          <div class="power-buttons">
+            <button class="btn btn-start" id="startBtn">▶ Start</button>
+            <button class="btn btn-stop" id="stopBtn">⏹ Stop</button>
+            <button class="btn btn-restart" id="restartBtn">🔄 Restart</button>
+          </div>
+        </div>
+
+        <!-- Mode Selector Cards -->
+        <div class="mode-selector-wrap">
+          <span class="section-label">Server Operating Mode</span>
+          <div class="mode-grid">
+            <div class="mode-card active" data-mode="wake_on_demand" id="modeWakeOnDemand">
+              <div class="mode-icon">⚡</div>
+              <div class="mode-info">
+                <h4>Wake on Demand</h4>
+                <p>Auto-sleeps when 0 players online. Auto-wakes when friends join. Best for battery!</p>
+              </div>
+            </div>
+            <div class="mode-card" data-mode="always_on" id="modeAlwaysOn">
+              <div class="mode-icon">🟢</div>
+              <div class="mode-info">
+                <h4>24/7 Always-On</h4>
+                <p>Runs continuously without sleeping. Ideal for laptops or powered setups.</p>
+              </div>
+            </div>
+            <div class="mode-card" data-mode="scheduled" id="modeScheduled">
+              <div class="mode-icon">🕒</div>
+              <div class="mode-info">
+                <h4>Scheduled</h4>
+                <p>Operates during specified hours (e.g. 4 PM - 11 PM) to preserve energy.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Hardware & Device Health (Critical for Mobile & Old Laptops) -->
+      <section class="card health-card">
+        <div class="card-header">
+          <h3>📱 Device & Battery Health</h3>
+          <span class="badge" id="thermalBadge">Cool / Optimal</span>
+        </div>
+        <div class="health-grid">
+          <!-- Battery Gauge -->
+          <div class="metric-box">
+            <div class="metric-top">
+              <span class="metric-title">Battery Level</span>
+              <span class="metric-icon" id="batteryIcon">🔋</span>
+            </div>
+            <div class="metric-val" id="batteryVal">--%</div>
+            <div class="metric-progress-bg">
+              <div class="metric-progress-bar" id="batteryBar" style="width: 0%"></div>
+            </div>
+            <span class="metric-sub" id="batteryState">Checking power...</span>
+          </div>
+
+          <!-- Temperature Meter -->
+          <div class="metric-box">
+            <div class="metric-top">
+              <span class="metric-title">Device Temp</span>
+              <span class="metric-icon">🌡️</span>
+            </div>
+            <div class="metric-val" id="tempVal">--°C</div>
+            <div class="metric-progress-bg">
+              <div class="metric-progress-bar temp-bar" id="tempBar" style="width: 30%"></div>
+            </div>
+            <span class="metric-sub" id="tempAdvice">Optimal dissipation</span>
+          </div>
+
+          <!-- CPU Usage -->
+          <div class="metric-box">
+            <div class="metric-top">
+              <span class="metric-title">CPU Load</span>
+              <span class="metric-icon">⚡</span>
+            </div>
+            <div class="metric-val" id="cpuVal">0%</div>
+            <div class="metric-progress-bg">
+              <div class="metric-progress-bar" id="cpuBar" style="width: 0%"></div>
+            </div>
+            <span class="metric-sub" id="cpuCores">Octa-Core ARM64</span>
+          </div>
+
+          <!-- RAM Gauge -->
+          <div class="metric-box">
+            <div class="metric-top">
+              <span class="metric-title">Memory (RAM)</span>
+              <span class="metric-icon">💾</span>
+            </div>
+            <div class="metric-val" id="ramVal">-- / -- MB</div>
+            <div class="metric-progress-bg">
+              <div class="metric-progress-bar" id="ramBar" style="width: 0%"></div>
+            </div>
+            <span class="metric-sub" id="ramAlloc">Allocated to MC: 3.5 GB</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Connection & Shareable Link Card -->
+      <section class="card connect-card">
+        <div class="card-header">
+          <h3>🌐 Play with Friends (No Port Forwarding)</h3>
+          <span class="badge live-badge" id="tunnelStatus">Playit.gg Active</span>
+        </div>
+        <div class="connect-grid">
+          <div class="connect-box">
+            <span class="box-label">🖥️ Java Edition (PC / Mac)</span>
+            <div class="ip-row">
+              <input type="text" readonly id="javaIpInput" value="Connecting to tunnel...">
+              <button class="copy-btn" data-target="javaIpInput">Copy</button>
+            </div>
+          </div>
+
+          <div class="connect-box">
+            <span class="box-label">📱 Bedrock Edition (Android / iOS / Console)</span>
+            <div class="ip-row">
+              <input type="text" readonly id="bedrockIpInput" value="Connecting to tunnel...">
+              <button class="copy-btn" data-target="bedrockIpInput">Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="lan-info">
+          <span>🏠 Home Wi-Fi LAN:</span> <strong id="lanAddressDisplay">192.168.1.50:25565</strong> 
+          <span class="muted">(Use this if playing on the same home Wi-Fi)</span>
+        </div>
+      </section>
+
+      <!-- Live Web Console & Command Input -->
+      <section class="card console-card">
+        <div class="card-header">
+          <div class="console-title-wrap">
+            <h3>💻 Live Server Console</h3>
+            <span class="player-count-badge" id="playerCountBadge">0 Players Online</span>
+          </div>
+          <div class="console-actions">
+            <button class="small-btn" id="clearConsoleBtn">Clear</button>
+            <button class="small-btn" id="autoscrollToggle">Autoscroll: ON</button>
+          </div>
+        </div>
+
+        <!-- Terminal Window -->
+        <div class="terminal-container" id="terminalWindow">
+          <div class="terminal-line">[PocketCraft] Ready. Server initialized.</div>
+        </div>
+
+        <!-- Quick Command Shortcuts -->
+        <div class="quick-commands">
+          <button class="cmd-pill" data-cmd="list">/list</button>
+          <button class="cmd-pill" data-cmd="save-all">/save-all</button>
+          <button class="cmd-pill" data-cmd="time set day">/time set day</button>
+          <button class="cmd-pill" data-cmd="weather clear">/weather clear</button>
+          <button class="cmd-pill" data-cmd="tps">/tps</button>
+        </div>
+
+        <!-- Command Input Form -->
+        <form class="command-bar" id="commandForm">
+          <span class="cmd-prompt">&gt;</span>
+          <input type="text" id="cmdInput" placeholder="Enter Minecraft command (e.g. op username, gamemode creative)..." autocomplete="off">
+          <button type="submit" class="btn btn-send">Send</button>
+        </form>
+      </section>
+
+    </main>
+
+    <!-- Settings Modal -->
+    <div class="modal-backdrop" id="settingsModal">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3>⚙️ Server & Hardware Settings</h3>
+          <button class="close-modal" id="closeSettingsBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="settingsForm">
+            <div class="form-group">
+              <label>Server Name / MOTD</label>
+              <input type="text" id="settingServerName" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label>Minecraft RAM Allocation (MB)</label>
+              <div class="range-wrap">
+                <input type="range" id="settingRamSlider" min="1024" max="6144" step="256" class="form-range">
+                <span class="range-val" id="ramSliderVal">3584 MB</span>
+              </div>
+              <small class="form-help">Recommended for 8GB phones (Vivo V20): 3584 MB. Leaves RAM for Android OS.</small>
+            </div>
+
+            <div class="form-group">
+              <label>Wake-on-Demand Idle Timeout (Minutes)</label>
+              <input type="number" id="settingIdleMinutes" min="2" max="60" class="form-input" value="10">
+              <small class="form-help">How long to wait after the last player disconnects before putting server to sleep.</small>
+            </div>
+
+            <div class="form-group">
+              <label>Operating Hours (For Scheduled Mode)</label>
+              <div class="time-row">
+                <div>
+                  <small>Start Time</small>
+                  <input type="time" id="settingStartTime" class="form-input" value="16:00">
+                </div>
+                <div>
+                  <small>End Time</small>
+                  <input type="time" id="settingEndTime" class="form-input" value="23:00">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Thermal Safety Throttle Limit (°C)</label>
+              <input type="number" id="settingMaxTemp" min="40" max="60" class="form-input" value="48">
+              <small class="form-help">Protects your phone battery from thermal wear and swelling.</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Save Configuration</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

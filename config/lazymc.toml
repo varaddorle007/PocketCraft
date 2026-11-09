@@ -1,0 +1,16 @@
+# PocketCraft - lazymc Configuration
+# High-performance wake-on-demand proxy for ARM/Android and PC
+
+bind = "0.0.0.0:25565"
+server = "127.0.0.1:25566"
+command = ["java", "-Xms1024M", "-Xmx3584M", "-XX:+UseG1GC", "-XX:+ParallelRefProcEnabled", "-jar", "server.jar", "nogui"]
+directory = "./server"
+sleep_after = "10m"
+min_lifetime = "2m"
+join_method = "hold"
+
+[motd]
+sleeping = "§6§lPocketCraft §7» §eServer sleeping §8(Join to wake up!)"
+starting = "§6§lPocketCraft §7» §aServer waking up... §ePlease hold on! ⏳"
+stopping = "§6§lPocketCraft §7» §cServer entering power-save mode..."
+
