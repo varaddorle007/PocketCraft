@@ -5,3 +5,4 @@ echo   ⛏️ Starting PocketCraft Server Manager...
 echo ================================================================
 node server.js
 pause
+

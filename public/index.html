@@ -218,6 +218,15 @@
             </div>
 
             <div class="form-group">
+              <label>Player Authentication Mode</label>
+              <select id="settingOnlineMode" class="form-input">
+                <option value="true">Microsoft Account Only (Official Premium)</option>
+                <option value="false">All Players (Allow Offline / Bedrock / Non-Premium)</option>
+              </select>
+              <small class="form-help">Choose "All Players" if any friends play on mobile Bedrock without Xbox Live or use offline launchers.</small>
+            </div>
+
+            <div class="form-group">
               <label>Minecraft RAM Allocation (MB)</label>
               <div class="range-wrap">
                 <input type="range" id="settingRamSlider" min="1024" max="6144" step="256" class="form-range">

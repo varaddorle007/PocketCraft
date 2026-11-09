@@ -530,10 +530,33 @@ wss.on('connection', (ws) => {
 app.get('/api/status', (req, res) => res.json(getStatusPayload()));
 app.get('/api/config', (req, res) => res.json(config));
 
+// Helper to sync server.properties
+function updateServerProperty(key, value) {
+  const propFile = path.join(SERVER_DIR, 'server.properties');
+  if (fs.existsSync(propFile)) {
+    let content = fs.readFileSync(propFile, 'utf8');
+    const regex = new RegExp(`^${key}=.*$`, 'm');
+    if (regex.test(content)) {
+      content = content.replace(regex, `${key}=${value}`);
+    } else {
+      content += `\n${key}=${value}`;
+    }
+    fs.writeFileSync(propFile, content);
+  }
+}
+
 app.post('/api/config', (req, res) => {
   try {
     const updates = req.body;
     config = { ...config, ...updates };
+
+    if (updates.onlineMode !== undefined) {
+      updateServerProperty('online-mode', updates.onlineMode ? 'true' : 'false');
+    }
+    if (updates.serverName) {
+      updateServerProperty('motd', updates.serverName);
+    }
+
     saveConfig();
     broadcastWs({ type: 'config', data: config });
     broadcastWs({ type: 'status', data: getStatusPayload() });

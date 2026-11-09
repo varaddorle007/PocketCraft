@@ -210,6 +210,9 @@ function updateConfig(cfg) {
   ramSliderVal.textContent = `${cfg.ramAllocationMb} MB`;
   document.getElementById('settingServerName').value = cfg.serverName || '';
   document.getElementById('settingIdleMinutes').value = cfg.idleSleepMinutes || 10;
+  if (document.getElementById('settingOnlineMode')) {
+    document.getElementById('settingOnlineMode').value = (cfg.onlineMode === false) ? 'false' : 'true';
+  }
   if (cfg.schedule) {
     document.getElementById('settingStartTime').value = cfg.schedule.startTime || '16:00';
     document.getElementById('settingEndTime').value = cfg.schedule.endTime || '23:00';
@@ -352,6 +355,7 @@ settingsForm.addEventListener('submit', (e) => {
   e.preventDefault();
   const updates = {
     serverName: document.getElementById('settingServerName').value,
+    onlineMode: document.getElementById('settingOnlineMode') ? (document.getElementById('settingOnlineMode').value === 'true') : true,
     ramAllocationMb: parseInt(settingRamSlider.value),
     idleSleepMinutes: parseInt(document.getElementById('settingIdleMinutes').value),
     schedule: {

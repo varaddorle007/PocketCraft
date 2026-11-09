@@ -1,4 +1,4 @@
-﻿# PocketCraft - Universal Windows Setup Script (Windows 7 / 8 / 10 / 11)
+# PocketCraft - Universal Windows Setup Script (Windows 7 / 8 / 10 / 11)
 $ErrorActionPreference = "Continue"
 
 Write-Host "================================================================" -ForegroundColor Cyan
